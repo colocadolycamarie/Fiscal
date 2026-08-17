@@ -1,10 +1,10 @@
 import { useRef, useState } from "react";
-import { Check, Database, Loader2, Plus, RefreshCw, UploadCloud } from "lucide-react";
+import { Check, Database, Loader2, Pencil, Plus, RefreshCw, Trash2, UploadCloud, X as XIcon } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Badge, Button, SectionHeading } from "@/components/primitives";
 import { EmptyState, ErrorState, LoadingState } from "@/components/status";
 import { useWorkspace } from "@/hooks/use-workspace";
-import { useCreateDataSource, useDataSources, useImportLedgerCsv, useResyncDataSource } from "@/hooks/use-data-sources";
+import { useCreateDataSource, useDataSources, useDeleteDataSource, useImportLedgerCsv, useRenameDataSource, useResyncDataSource } from "@/hooks/use-data-sources";
 import { ApiError } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import type { DataSource } from "@/lib/api-types";
@@ -24,8 +24,12 @@ function ConnectionRow({ connection }: { connection: DataSource }) {
   const { workspace } = useWorkspace();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importError, setImportError] = useState<string>();
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState(connection.label);
   const importCsv = useImportLedgerCsv(workspace?.id);
   const resync = useResyncDataSource(workspace?.id);
+  const rename = useRenameDataSource(workspace?.id);
+  const remove = useDeleteDataSource(workspace?.id);
 
   async function handleFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -39,17 +43,65 @@ function ConnectionRow({ connection }: { connection: DataSource }) {
     );
   }
 
+  function handleRenameSubmit() {
+    const trimmed = renameValue.trim();
+    if (!trimmed || trimmed === connection.label) {
+      setIsRenaming(false);
+      setRenameValue(connection.label);
+      return;
+    }
+    rename.mutate({ dataSourceId: connection.id, label: trimmed }, { onSuccess: () => setIsRenaming(false) });
+  }
+
+  function handleDelete() {
+    if (!window.confirm(`Delete "${connection.label}"? Its imported transactions stay in your ledger, but the connection itself will be removed.`)) {
+      return;
+    }
+    remove.mutate(connection.id);
+  }
+
   return (
     <tr className="border-b border-border/70 last:border-0 align-top">
       <td className="px-5 py-4">
         <div className="flex items-center gap-3">
-          <span className="flex size-8 items-center justify-center rounded-md border border-border bg-muted font-mono text-xs font-semibold">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-muted font-mono text-xs font-semibold">
             {connection.label.slice(0, 2).toUpperCase()}
           </span>
-          <div>
-            <div className="font-semibold">{connection.label}</div>
-            <div className="mt-0.5 text-[10px] text-muted-foreground">{connection.provider}</div>
-          </div>
+          {isRenaming ? (
+            <div className="flex items-center gap-1.5">
+              <input
+                autoFocus
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleRenameSubmit();
+                  if (e.key === "Escape") {
+                    setIsRenaming(false);
+                    setRenameValue(connection.label);
+                  }
+                }}
+                className="h-8 w-40 rounded-md border border-border bg-card px-2 text-xs outline-none focus:ring-2 focus:ring-ring/30"
+              />
+              <button onClick={handleRenameSubmit} disabled={rename.isPending} className="focus-ring rounded p-1 text-positive hover:bg-muted" aria-label="Save name">
+                {rename.isPending ? <Loader2 className="animate-spin" size={14} /> : <Check size={14} />}
+              </button>
+              <button
+                onClick={() => {
+                  setIsRenaming(false);
+                  setRenameValue(connection.label);
+                }}
+                className="focus-ring rounded p-1 text-muted-foreground hover:bg-muted"
+                aria-label="Cancel rename"
+              >
+                <XIcon size={14} />
+              </button>
+            </div>
+          ) : (
+            <div>
+              <div className="font-semibold">{connection.label}</div>
+              <div className="mt-0.5 text-[10px] text-muted-foreground">{connection.provider}</div>
+            </div>
+          )}
         </div>
         {importError && <p className="mt-2 max-w-xs text-[11px] text-destructive">{importError}</p>}
         {connection.errorMessage && !importError && <p className="mt-2 max-w-xs text-[11px] text-destructive">{connection.errorMessage}</p>}
@@ -68,6 +120,24 @@ function ConnectionRow({ connection }: { connection: DataSource }) {
           <Button variant="quiet" onClick={() => resync.mutate(connection.id)} disabled={resync.isPending}>
             <RefreshCw size={14} className={resync.isPending ? "animate-spin" : ""} /> Resync
           </Button>
+          <button
+            onClick={() => setIsRenaming(true)}
+            disabled={isRenaming}
+            className="focus-ring rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40"
+            aria-label="Rename connection"
+            title="Rename"
+          >
+            <Pencil size={14} />
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={remove.isPending}
+            className="focus-ring rounded-md p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-40"
+            aria-label="Delete connection"
+            title="Delete"
+          >
+            {remove.isPending ? <Loader2 className="animate-spin" size={14} /> : <Trash2 size={14} />}
+          </button>
         </div>
       </td>
     </tr>

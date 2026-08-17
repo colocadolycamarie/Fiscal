@@ -1,4 +1,4 @@
-import { ArrowDownRight, ArrowUpRight, MoreHorizontal, Sparkles } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { AppShell } from "@/components/app-shell";
 import { SectionHeading } from "@/components/primitives";
@@ -15,9 +15,8 @@ function MetricCard({ metric }: { metric: HeadlineMetric }) {
   const negative = metric.direction === "negative";
   return (
     <div className="rounded-lg border border-border bg-card p-4">
-      <div className="mb-4 flex items-start justify-between">
+      <div className="mb-4">
         <span className="text-xs font-medium text-muted-foreground">{metric.label}</span>
-        <MoreHorizontal size={15} className="text-muted-foreground" />
       </div>
       <div className="flex items-end justify-between gap-2">
         <div>
@@ -35,7 +34,7 @@ function MetricCard({ metric }: { metric: HeadlineMetric }) {
             {metric.key === "gross_margin" ? " pts" : "%"} {metric.deltaLabel}
           </div>
         </div>
-        <Sparkline values={metric.sparkline} negative={negative} />
+        {metric.sparkline.length >= 2 && <Sparkline values={metric.sparkline} negative={negative} />}
       </div>
     </div>
   );

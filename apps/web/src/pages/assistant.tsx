@@ -165,12 +165,9 @@ export default function AssistantPage() {
   return (
     <AppShell>
       <div className="animate-rise">
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div className="font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground">Assistant</div>
-            <h1 className="mt-1 font-display text-3xl tracking-[-.04em]">What should we look into?</h1>
-          </div>
-          <Badge tone="positive">Live ledger</Badge>
+        <div className="mb-5">
+          <div className="font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground">Assistant</div>
+          <h1 className="mt-1 font-display text-3xl tracking-[-.04em]">What should we look into?</h1>
         </div>
 
         <div className="flex flex-col gap-5 lg:flex-row">

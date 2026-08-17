@@ -108,4 +108,40 @@ router.post("/data-sources/:dataSourceId/resync", requireWorkspaceAccess, async 
   res.json(updated);
 });
 
+const renameSchema = z.object({
+  label: z.string().trim().min(1, "Label can't be empty.").max(120),
+});
+
+router.patch("/data-sources/:dataSourceId", requireWorkspaceAccess, async (req, res) => {
+  const parsed = renameSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.issues[0]?.message ?? "Invalid input." });
+    return;
+  }
+  const [updated] = await db
+    .update(dataSourcesTable)
+    .set({ label: parsed.data.label })
+    .where(and(eq(dataSourcesTable.id, String(req.params.dataSourceId)), eq(dataSourcesTable.workspaceId, req.workspaceId!)))
+    .returning();
+
+  if (!updated) {
+    res.status(404).json({ error: "Data source not found." });
+    return;
+  }
+  res.json(updated);
+});
+
+router.delete("/data-sources/:dataSourceId", requireWorkspaceAccess, async (req, res) => {
+  const [deleted] = await db
+    .delete(dataSourcesTable)
+    .where(and(eq(dataSourcesTable.id, String(req.params.dataSourceId)), eq(dataSourcesTable.workspaceId, req.workspaceId!)))
+    .returning();
+
+  if (!deleted) {
+    res.status(404).json({ error: "Data source not found." });
+    return;
+  }
+  res.status(204).send();
+});
+
 export default router;

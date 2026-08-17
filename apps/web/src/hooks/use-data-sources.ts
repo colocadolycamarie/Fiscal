@@ -40,6 +40,23 @@ export function useImportLedgerCsv(workspaceId: string | undefined) {
   });
 }
 
+export function useRenameDataSource(workspaceId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { dataSourceId: string; label: string }) =>
+      apiRequest<DataSource>(`/data-sources/${input.dataSourceId}?workspaceId=${workspaceId}`, { method: "PATCH", body: { label: input.label } }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: dataSourcesKey(workspaceId) }),
+  });
+}
+
+export function useDeleteDataSource(workspaceId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (dataSourceId: string) => apiRequest<void>(`/data-sources/${dataSourceId}?workspaceId=${workspaceId}`, { method: "DELETE" }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: dataSourcesKey(workspaceId) }),
+  });
+}
+
 export function useResyncDataSource(workspaceId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({

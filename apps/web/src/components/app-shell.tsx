@@ -1,12 +1,27 @@
 import { useState, type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { Bell, ChevronDown, ChevronRight, CircleHelp, FileBarChart, Menu, MoreHorizontal, Network, Settings2, Sparkles, Table2, X } from "lucide-react";
+import {
+  Bell,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  FileBarChart,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Network,
+  Settings2,
+  Sparkles,
+  Table2,
+  X,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCurrentUser, useLogout } from "@/hooks/use-auth";
 import { useWorkspace } from "@/hooks/use-workspace";
+import logoMark from "@/assets/logo.png";
 
 const NAV_ITEMS = [
-  { href: "/app", label: "Dashboard", icon: Sparkles },
+  { href: "/app", label: "Dashboard", icon: LayoutDashboard },
   { href: "/app/assistant", label: "Assistant", icon: Sparkles },
   { href: "/app/metrics", label: "Metric library", icon: Table2 },
   { href: "/app/connections", label: "Connections", icon: Network },
@@ -16,9 +31,9 @@ const NAV_ITEMS = [
 
 export function Logo({ dark = false }: { dark?: boolean }) {
   return (
-    <Link href="/" className={cn("flex items-center gap-2.5 focus-ring", dark ? "text-sidebar-foreground" : "text-foreground")}>
-      <span className="flex size-8 items-center justify-center rounded-md bg-accent text-accent-foreground">
-        <span className="font-mono text-sm font-semibold">F</span>
+    <Link href="/app" className={cn("flex items-center gap-2.5 focus-ring", dark ? "text-sidebar-foreground" : "text-foreground")}>
+      <span className="flex size-8 items-center justify-center rounded-md bg-accent p-1.5">
+        <img src={logoMark} alt="" className="h-full w-full object-contain" />
       </span>
       <span className="font-display text-[19px] tracking-[-.03em]">Fiscal Insights</span>
     </Link>
@@ -35,8 +50,9 @@ function initials(name: string) {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
   const { data: me } = useCurrentUser();
   const { workspace, workspaces, selectWorkspace } = useWorkspace();
   const logout = useLogout();
@@ -57,28 +73,50 @@ export function AppShell({ children }: { children: ReactNode }) {
           </button>
         </div>
 
-        {workspaces.length > 0 && (
-          <>
+        {workspace && (
+          <div className="mb-6">
             <div className="mb-3 px-2 font-mono text-[9px] uppercase tracking-[.16em] text-sidebar-foreground/50">Workspace</div>
-            <div className="mb-6 space-y-1">
-              {workspaces.map((ws) => (
+            {workspaces.length > 1 ? (
+              <div className="relative">
                 <button
-                  key={ws.id}
-                  onClick={() => selectWorkspace(ws.id)}
-                  className={cn(
-                    "flex w-full items-center justify-between rounded-md border border-sidebar-border px-2.5 py-2 text-left hover:bg-sidebar-accent",
-                    ws.id === workspace?.id && "bg-sidebar-accent",
-                  )}
+                  onClick={() => setWorkspaceMenuOpen((open) => !open)}
+                  className="flex w-full items-center justify-between rounded-md border border-sidebar-border px-2.5 py-2 text-left hover:bg-sidebar-accent"
+                  aria-expanded={workspaceMenuOpen}
                 >
                   <span>
-                    <span className="block text-xs font-semibold">{ws.name}</span>
-                    <span className="mt-0.5 block font-mono text-[10px] text-sidebar-foreground/55">Finance / {ws.baseCurrency}</span>
+                    <span className="block text-xs font-semibold">{workspace.name}</span>
+                    <span className="mt-0.5 block font-mono text-[10px] text-sidebar-foreground/55">Finance / {workspace.baseCurrency}</span>
                   </span>
-                  {ws.id === workspace?.id && <ChevronDown size={14} className="text-sidebar-foreground/55" />}
+                  <ChevronDown size={14} className={cn("text-sidebar-foreground/55 transition-transform", workspaceMenuOpen && "rotate-180")} />
                 </button>
-              ))}
-            </div>
-          </>
+                {workspaceMenuOpen && (
+                  <div className="mt-1 space-y-1 rounded-md border border-sidebar-border bg-sidebar p-1">
+                    {workspaces.map((ws) => (
+                      <button
+                        key={ws.id}
+                        onClick={() => {
+                          selectWorkspace(ws.id);
+                          setWorkspaceMenuOpen(false);
+                        }}
+                        className={cn(
+                          "flex w-full items-center justify-between rounded-md px-2.5 py-2 text-left hover:bg-sidebar-accent",
+                          ws.id === workspace.id && "bg-sidebar-accent",
+                        )}
+                      >
+                        <span className="text-xs font-semibold">{ws.name}</span>
+                        {ws.id === workspace.id && <Check size={13} className="text-sidebar-foreground/55" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-md border border-sidebar-border px-2.5 py-2">
+                <span className="block text-xs font-semibold">{workspace.name}</span>
+                <span className="mt-0.5 block font-mono text-[10px] text-sidebar-foreground/55">Finance / {workspace.baseCurrency}</span>
+              </div>
+            )}
+          </div>
         )}
 
         <nav aria-label="Main navigation" className="space-y-1">
@@ -109,8 +147,14 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <div className="truncate text-xs font-semibold">{me?.user.name ?? "…"}</div>
                 <div className="truncate text-[10px] text-sidebar-foreground/50">{me?.user.email ?? ""}</div>
               </div>
-              <button onClick={() => logout.mutate()} className="ml-auto text-sidebar-foreground/45 hover:text-sidebar-foreground" aria-label="Sign out">
-                <MoreHorizontal size={15} />
+              <button
+                onClick={() => logout.mutate(undefined, { onSuccess: () => setLocation("/login") })}
+                disabled={logout.isPending}
+                className="ml-auto rounded-md p-1.5 text-sidebar-foreground/55 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground disabled:opacity-50"
+                aria-label="Sign out"
+                title="Sign out"
+              >
+                <LogOut size={15} />
               </button>
             </div>
           </div>
@@ -134,9 +178,6 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Logo />
             </div>
           </div>
-          <button className="focus-ring rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Help">
-            <CircleHelp size={17} />
-          </button>
         </header>
         <div className="mx-auto max-w-[1480px] px-5 py-8 sm:px-8 lg:px-10">{children}</div>
       </main>

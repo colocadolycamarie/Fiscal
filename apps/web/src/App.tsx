@@ -3,7 +3,6 @@ import { Route, Switch, useLocation } from "wouter";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { RequireAuth } from "@/components/require-auth";
 import { WorkspaceProvider } from "@/hooks/use-workspace";
-import LandingPage from "@/pages/landing";
 import LoginPage from "@/pages/login";
 import SignupPage from "@/pages/signup";
 import DashboardPage from "@/pages/dashboard";
@@ -24,7 +23,7 @@ function AppRouter() {
   return (
     <ErrorBoundary resetKey={location}>
       <Switch>
-        <Route path="/" component={LandingPage} />
+        <Route path="/" component={LoginPage} />
         <Route path="/login" component={LoginPage} />
         <Route path="/signup" component={SignupPage} />
         <Route path="/app" component={() => <RequireAuth component={DashboardPage} />} />
