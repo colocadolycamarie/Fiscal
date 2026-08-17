@@ -11,7 +11,7 @@ const router: IRouter = Router();
 
 const SESSION_COOKIE_OPTIONS = {
   httpOnly: true,
-  sameSite: "lax" as const,
+  sameSite: (process.env.NODE_ENV === "production" ? "none" : "lax") as const,
   secure: process.env.NODE_ENV === "production",
   path: "/",
 };
