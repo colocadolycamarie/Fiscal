@@ -11,7 +11,10 @@ const router: IRouter = Router();
 
 const SESSION_COOKIE_OPTIONS = {
   httpOnly: true,
-  sameSite: "lax" as const,
+  // Frontend and API live on different domains in production (e.g. Vercel +
+  // Render), which makes every request cross-site. Cross-site cookies
+  // require SameSite=None, and browsers require Secure alongside it.
+  sameSite: process.env.NODE_ENV === "production" ? ("none" as const) : ("lax" as const),
   secure: process.env.NODE_ENV === "production",
   path: "/",
 };

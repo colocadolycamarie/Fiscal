@@ -32,9 +32,7 @@ const NAV_ITEMS = [
 export function Logo({ dark = false }: { dark?: boolean }) {
   return (
     <Link href="/app" className={cn("flex items-center gap-2.5 focus-ring", dark ? "text-sidebar-foreground" : "text-foreground")}>
-      <span className="flex size-8 items-center justify-center rounded-md bg-accent p-1.5">
-        <img src={logoMark} alt="" className="h-full w-full object-contain" />
-      </span>
+      <img src={logoMark} alt="" className="size-8 rounded-md object-cover" />
       <span className="font-display text-[19px] tracking-[-.03em]">Fiscal Insights</span>
     </Link>
   );
