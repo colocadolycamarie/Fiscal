@@ -19,14 +19,16 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="ledger-grid flex min-h-[100dvh] flex-col items-center justify-center bg-background px-6 py-12">
-      <div className="w-full max-w-[440px] rounded-lg border border-border bg-card p-8 shadow-sm sm:p-10">
-        <Logo />
+    <div className="ledger-grid flex min-h-[100dvh] flex-col items-center justify-center bg-background px-6 py-10">
+      <div className="w-full max-w-[440px] rounded-lg border border-border bg-card p-7 shadow-sm sm:p-9">
+        <div className="flex justify-center">
+          <Logo stacked />
+        </div>
 
-        <div className="mt-8 font-mono text-xs uppercase tracking-[.16em] text-muted-foreground">Create your workspace</div>
-        <h1 className="mt-3 font-display text-4xl tracking-[-.045em]">Set up Fiscal Insights.</h1>
+        <div className="mt-7 font-mono text-xs uppercase tracking-[.16em] text-muted-foreground">Create your workspace</div>
+        <h1 className="mt-2.5 font-display text-4xl tracking-[-.045em]">Set up Fiscal Insights.</h1>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
             <label htmlFor="name" className="text-sm font-semibold text-foreground">
               Your name
@@ -94,7 +96,7 @@ export default function SignupPage() {
           </Button>
         </form>
 
-        <p className="mt-8 border-t border-border pt-5 text-sm leading-6 text-muted-foreground">
+        <p className="mt-6 border-t border-border pt-4 text-sm leading-6 text-muted-foreground">
           Already have an account?{" "}
           <Link href="/login" className="font-semibold text-foreground underline">
             Sign in
