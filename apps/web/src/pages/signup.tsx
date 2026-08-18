@@ -19,15 +19,12 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="ledger-grid relative flex min-h-[100dvh] flex-col items-center justify-center bg-background px-6 py-12">
-      <div className="absolute left-6 top-8 sm:left-10 sm:top-10">
-        <Logo />
-      </div>
-
+    <div className="ledger-grid flex min-h-[100dvh] flex-col items-center justify-center bg-background px-6 py-12">
       <div className="w-full max-w-[440px] rounded-lg border border-border bg-card p-8 shadow-sm sm:p-10">
-        <div className="font-mono text-xs uppercase tracking-[.16em] text-muted-foreground">Create your workspace</div>
+        <Logo />
+
+        <div className="mt-8 font-mono text-xs uppercase tracking-[.16em] text-muted-foreground">Create your workspace</div>
         <h1 className="mt-3 font-display text-4xl tracking-[-.045em]">Set up Fiscal Insights.</h1>
-        <p className="mt-3 text-base leading-6 text-muted-foreground">One workspace, one owner account — invite teammates later.</p>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5">
           <div>

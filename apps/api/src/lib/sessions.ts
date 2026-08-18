@@ -5,8 +5,12 @@ import { eq } from "drizzle-orm";
 export const SESSION_COOKIE_NAME = "fiscal_session";
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
 
-function hashToken(token: string): string {
+export function hashSessionToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
+}
+
+function hashToken(token: string): string {
+  return hashSessionToken(token);
 }
 
 /** Issues a new session for a user. Returns the raw token to set as a cookie. */

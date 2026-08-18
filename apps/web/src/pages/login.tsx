@@ -21,12 +21,10 @@ export default function LoginPage() {
 
   return (
     <div className="ledger-grid flex min-h-[100dvh] flex-col items-center justify-center bg-background px-6 py-12">
-      <div className="mb-8">
-        <Logo />
-      </div>
-
       <div className="w-full max-w-[440px] rounded-lg border border-border bg-card p-8 shadow-sm sm:p-10">
-        <div className="font-mono text-xs uppercase tracking-[.16em] text-muted-foreground">Secure sign in</div>
+        <Logo />
+
+        <div className="mt-8 font-mono text-xs uppercase tracking-[.16em] text-muted-foreground">Secure sign in</div>
         <h1 className="mt-3 font-display text-4xl tracking-[-.045em]">Back to the numbers.</h1>
         <p className="mt-3 text-base leading-6 text-muted-foreground">Sign in with your workspace email.</p>
 

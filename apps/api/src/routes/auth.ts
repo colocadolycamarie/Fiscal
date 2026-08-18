@@ -1,9 +1,9 @@
 import { Router, type IRouter } from "express";
 import { z } from "zod";
-import { db, usersTable, workspacesTable, workspaceMembersTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { db, usersTable, workspacesTable, workspaceMembersTable, sessionsTable } from "@workspace/db";
+import { and, desc, eq } from "drizzle-orm";
 import { hashPassword, verifyPassword } from "../lib/passwords";
-import { createSession, destroySession, SESSION_COOKIE_NAME } from "../lib/sessions";
+import { createSession, destroySession, hashSessionToken, SESSION_COOKIE_NAME } from "../lib/sessions";
 import { requireAuth } from "../middlewares/require-auth";
 import { seedMetricCatalog } from "../services/metric-catalog";
 
@@ -95,6 +95,48 @@ router.get("/auth/me", requireAuth, async (req, res) => {
     user: { id: req.user!.id, name: req.user!.name, email: req.user!.email },
     workspaces: memberships.map((m) => ({ ...m.workspace, role: m.role })),
   });
+});
+
+router.get("/auth/sessions", requireAuth, async (req, res) => {
+  const currentToken: string | undefined = req.cookies?.[SESSION_COOKIE_NAME];
+  const currentHash = currentToken ? hashSessionToken(currentToken) : null;
+
+  const sessions = await db
+    .select()
+    .from(sessionsTable)
+    .where(eq(sessionsTable.userId, req.user!.id))
+    .orderBy(desc(sessionsTable.createdAt));
+
+  res.json(
+    sessions.map((session) => ({
+      id: session.id,
+      createdAt: session.createdAt,
+      expiresAt: session.expiresAt,
+      isCurrent: session.id === currentHash,
+    })),
+  );
+});
+
+router.delete("/auth/sessions/:sessionId", requireAuth, async (req, res) => {
+  const sessionId = String(req.params.sessionId);
+  const currentToken: string | undefined = req.cookies?.[SESSION_COOKIE_NAME];
+  const currentHash = currentToken ? hashSessionToken(currentToken) : null;
+
+  const [deleted] = await db
+    .delete(sessionsTable)
+    .where(and(eq(sessionsTable.id, sessionId), eq(sessionsTable.userId, req.user!.id)))
+    .returning();
+
+  if (!deleted) {
+    res.status(404).json({ error: "Session not found." });
+    return;
+  }
+
+  if (sessionId === currentHash) {
+    res.clearCookie(SESSION_COOKIE_NAME, SESSION_COOKIE_OPTIONS);
+  }
+
+  res.status(204).send();
 });
 
 export default router;
