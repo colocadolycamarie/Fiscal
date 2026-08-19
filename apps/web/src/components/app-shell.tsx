@@ -40,7 +40,7 @@ export function Logo({ dark = false, stacked = false }: { dark?: boolean; stacke
   }
 
   return (
-    <Link href="/app" className={cn("flex items-center gap-5 focus-ring", dark ? "text-sidebar-foreground" : "text-foreground")}>
+    <Link href="/app" className={cn("flex items-center gap-2 focus-ring", dark ? "text-sidebar-foreground" : "text-foreground")}>
       <img src={logoMark} alt="" className="size-8 rounded-md object-cover" />
       <span className="font-display text-[19px] tracking-[-.03em]">Fiscal Insights</span>
     </Link>
